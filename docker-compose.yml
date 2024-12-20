@@ -4,12 +4,16 @@ version: '3'
 # Перечень volume:
 volumes:
   pg_data:
+  static: # Для статики
+  media:  # Для медиафайлов
 
 # Перечень контейнеров:
 services:
   # Имя и описание первого контейнера; имя выбирает разработчик.
   # Это контейнер с базой данных:
   postgres:
+    networks:
+        - backend_network
     # Из какого образа запустить контейнер:
     image: postgres:13.10
     # Файл (или список файлов) с переменными окружения:
@@ -17,15 +21,47 @@ services:
     # Какой volume подключить для этого контейнера:
     volumes:
       - pg_data:/var/lib/postgresql/data
+
+
   # Имя и описание контейнера с бэкендом:
   backend:
     # Из какого Dockerfile собирать образ для этого контейнера:
+    networks:
+        - backend_network
     build: ./backend/
+    ports:
+      - "8000:8000"
     env_file: .env
     # Какие контейнеры нужно запустить до старта этого контейнера:
     depends_on:
       - postgres
+    volumes:
+      - static:/code/static
+      - media:/code/media
+
   # Имя третьего контейнера. Это контейнер с фронтендом:
   frontend:
     env_file: .env
+    networks:
+      - backend_network
     build: ./frontend/
+    ports:
+      - "3000:80"  # 3000 - порт на локальной машине, 8000 - порт в контейнере
+    volumes:
+      - static:/app/build/static
+
+# Прокси-сервер:
+  gateway:
+    networks:
+        - backend_network
+    build: ./nginx/
+    volumes:
+      - static:/var/html/static
+      - media:/var/html/media
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+networks:
+  backend_network:
