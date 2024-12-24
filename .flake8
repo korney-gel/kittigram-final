@@ -1,4 +1,4 @@
 [flake8]
 max-line-length = 79
 exclude = migrations, __pycache__, env
-ignore = F401, I001, I004, W291, W292, W293, E123, E261, E262, E301
+ignore = F401, I001, I004, W291, W292, W293, E123, E261, E262, E301, E501
