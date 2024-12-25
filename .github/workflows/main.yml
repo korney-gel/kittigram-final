@@ -34,3 +34,43 @@ jobs:
       - name: Run flake8 for PEP8 compliance
         run: |
           python -m flake8 backend/
+
+
+  build_and_push_to_docker_hub:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    needs: pep8-check
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Backend Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend/
+          push: true
+          tags: korney1978/kittygram_backend:latest
+
+      - name: Build and Push Frontend Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend/
+          push: true
+          tags: korney1978/kittygram_frontend:latest
+
+      - name: Build and Push Gateway Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./nginx/
+          push: true
+          tags: korney1978/kittygram_gateway:latest
