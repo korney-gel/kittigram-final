@@ -91,6 +91,12 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Create and prepare project directory
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          mkdir -p ~/kittygram
+          EOF
+
       - name: Create .env file
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
@@ -105,11 +111,10 @@ jobs:
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
           set -e
-          
-          # 1. Создаём/обновляем директорию для проекта
-          mkdir -p ~/kittygram
+
+          # 1. Переходим в директорию проекта
           cd ~/kittygram
-          
+
           # 2. Проверяем, существует ли .git; если да, выполняем git pull, иначе клонируем репозиторий
           if [ -d .git ]; then
             echo "Updating existing repository"
@@ -119,14 +124,14 @@ jobs:
             echo "Cloning repository for the first time"
             git clone https://github.com/korney-gel/kittigram-final.git .
           fi
-          
+
           # 3. Логинимся в Docker Hub
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          
+
           # 4. Обновляем контейнеры
           echo "Restarting Docker containers"
           docker-compose down
           docker-compose up -d --build
-          
+
           echo "Deployment completed successfully"
           EOF
