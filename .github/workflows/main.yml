@@ -111,27 +111,34 @@ jobs:
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
           set -e
-          cd ~/kittygram
-
-          if [ -d .git ]; then
+          
+          # Если папка уже существует и там есть .git, обновляем
+          if [ -d ~/kittygram/.git ]; then
             echo "Обновляем существующий репозиторий"
+            cd ~/kittygram
             git reset --hard
             git pull origin main
           else
             echo "Клонируем репозиторий в первый раз"
-            # Удаляем всё, кроме .env
-            ls -A | grep -v '.env' | xargs rm -rf
-            git clone https://github.com/korney-gel/kittigram-final.git .
+            git clone https://github.com/korney-gel/kittigram-final.git ~/kittygram
+            cd ~/kittygram
           fi
-
-
-          # 3. Логинимся в Docker Hub
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-          # 4. Обновляем контейнеры
-          echo "Restarting Docker containers"
-          docker-compose down
-          docker-compose up -d --build
-
-          echo "Deployment completed successfully"
-          EOF
+          
+          echo "Создаём (или обновляем) файл .env"
+          cat << ENV_EOF > .env
+        POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+        POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+        POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+        POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
+        POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
+        ENV_EOF
+        
+        echo "Вход в Docker Hub"
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        
+        echo "Перезапуск Docker-контейнеров"
+        docker-compose down
+        docker-compose up -d --build
+        
+        echo "Деплой успешно завершён"
+        EOF
