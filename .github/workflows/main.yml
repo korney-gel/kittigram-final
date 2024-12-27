@@ -111,19 +111,19 @@ jobs:
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
           set -e
-
-          # 1. Переходим в директорию проекта
           cd ~/kittygram
 
-          # 2. Проверяем, существует ли .git; если да, выполняем git pull, иначе клонируем репозиторий
           if [ -d .git ]; then
-            echo "Updating existing repository"
+            echo "Обновляем существующий репозиторий"
             git reset --hard
             git pull origin main
           else
-            echo "Cloning repository for the first time"
+            echo "Клонируем репозиторий в первый раз"
+            # Удаляем всё, кроме .env
+            ls -A | grep -v '.env' | xargs rm -rf
             git clone https://github.com/korney-gel/kittigram-final.git .
           fi
+
 
           # 3. Логинимся в Docker Hub
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
