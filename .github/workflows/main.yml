@@ -112,7 +112,7 @@ jobs:
           
           # 2. Клонируем/обновляем репозиторий
           if [ ! -d .git ]; then
-            git clone https://github.com/<your-username>/<your-repo>.git .
+            git clone https://github.com/korney-gel/kittigram-final.git .
           else
             git pull origin main
           fi
