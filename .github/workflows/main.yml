@@ -74,3 +74,53 @@ jobs:
           context: ./nginx/
           push: true
           tags: korney1978/kittygram_gateway:latest
+
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    needs: build_and_push_to_docker_hub
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Create .env file
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" > ~/kittygram/.env
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> ~/kittygram/.env
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> ~/kittygram/.env
+          echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> ~/kittygram/.env
+          echo "POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}" >> ~/kittygram/.env
+          EOF
+
+      - name: Deploy Application
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          set -e
+          
+          # 1. Создаём/обновляем директорию для проекта
+          mkdir -p ~/kittygram
+          cd ~/kittygram
+          
+          # 2. Клонируем/обновляем репозиторий
+          if [ ! -d .git ]; then
+            git clone https://github.com/<your-username>/<your-repo>.git .
+          else
+            git pull origin main
+          fi
+          
+          # 3. Логинимся в Docker Hub
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          
+          # 4. Обновляем контейнеры
+          docker-compose down
+          docker-compose up -d --build
+          EOF
