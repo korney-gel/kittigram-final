@@ -105,21 +105,22 @@ jobs:
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
           set -e
-          
+
           # 1. Создаём/обновляем директорию для проекта
           mkdir -p ~/kittygram
           cd ~/kittygram
-          
-          # 2. Клонируем/обновляем репозиторий
-          if [ ! -d .git ]; then
-            git clone https://github.com/korney-gel/kittigram-final.git .
-          else
+
+          # 2. Проверяем, существует ли .git; если да, выполняем git pull, иначе клонируем репозиторий
+          if [ -d .git ]; then
+            git reset --hard  # Обновляем локальные изменения
             git pull origin main
+          else
+            https://github.com/korney-gel/kittigram-final.git .
           fi
-          
+
           # 3. Логинимся в Docker Hub
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          
+
           # 4. Обновляем контейнеры
           docker-compose down
           docker-compose up -d --build
