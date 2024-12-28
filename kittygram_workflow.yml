@@ -1,0 +1,150 @@
+name: Kittygram workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  pep8-check:
+    name: Check PEP8 Compliance
+    runs-on: ubuntu-latest
+
+    steps:
+      # Копируем код проекта
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      # Устанавливаем Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      # Обновляем pip и устанавливаем зависимости
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8==6.0.0 flake8-isort==6.0.0
+
+      # Запускаем flake8
+      - name: Run flake8 for PEP8 compliance
+        run: |
+          python -m flake8 backend/
+
+
+  build_and_push_to_docker_hub:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    needs: pep8-check
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Backend Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend/
+          push: true
+          tags: korney1978/kittygram_backend:latest
+
+      - name: Build and Push Frontend Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend/
+          push: true
+          tags: korney1978/kittygram_frontend:latest
+
+      - name: Build and Push Gateway Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./nginx/
+          push: true
+          tags: korney1978/kittygram_gateway:latest
+
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    needs: build_and_push_to_docker_hub
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 -d > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          rm -rf ~/kittygram
+
+
+      - name: Deploy Application
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          set -e
+           # Удаляем существующую папку, если она есть
+          if [ -d ~/kittygram ]; then
+            echo "Удаляем существующую папку"
+            rm -rf ~/kittygram
+          fi
+            
+          echo "Клонируем репозиторий в первый раз"
+          git clone https://github.com/korney-gel/kittigram-final.git ~/kittygram
+          cd ~/kittygram  
+          
+          echo "Создаём (или обновляем) .env"
+          cat << ENV_EOF > .env
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
+          ENV_EOF
+          
+          echo "Логин в Docker Hub"
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          
+          echo "Перезапуск контейнеров"
+          docker-compose down
+          docker-compose up -d --build
+          
+          echo "Деплой завершён"
+          EOF
+
+  auto_tests:
+    name: Run Backend and Frontend Tests
+    runs-on: ubuntu-latest
+    needs: deploy
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Python for Tests
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install Test Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Run All Tests
+        run: |
+          pytest tests/
