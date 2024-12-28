@@ -95,34 +95,34 @@ jobs:
       - name: Deploy Application
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-set -e
-# Если в ~/kittygram есть .git, обновляем
-if [ -d ~/kittygram/.git ]; then
-  echo "Обновляем существующий репозиторий"
-  cd ~/kittygram
-  git reset --hard
-  git pull origin main
-else
-  echo "Клонируем репозиторий в первый раз"
-  git clone https://github.com/korney-gel/kittigram-final.git ~/kittygram
-  cd ~/kittygram
-fi
-
-echo "Создаём (или обновляем) .env"
-cat << ENV_EOF > .env
-POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
-POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
-ENV_EOF
-
-echo "Логин в Docker Hub"
-echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-echo "Перезапуск контейнеров"
-docker-compose down
-docker-compose up -d --build
-
-echo "Деплой завершён"
-EOF
+          set -e
+          # Если в ~/kittygram есть .git, обновляем
+          if [ -d ~/kittygram/.git ]; then
+            echo "Обновляем существующий репозиторий"
+            cd ~/kittygram
+            git reset --hard
+            git pull origin main
+          else
+            echo "Клонируем репозиторий в первый раз"
+            git clone https://github.com/korney-gel/kittigram-final.git ~/kittygram
+            cd ~/kittygram
+          fi
+          
+          echo "Создаём (или обновляем) .env"
+          cat << ENV_EOF > .env
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT=${{ secrets.POSTGRES_PORT }}
+          ENV_EOF
+          
+          echo "Логин в Docker Hub"
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          
+          echo "Перезапуск контейнеров"
+          docker-compose down
+          docker-compose up -d --build
+          
+          echo "Деплой завершён"
+          EOF
