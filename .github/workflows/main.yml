@@ -97,17 +97,15 @@ jobs:
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
           set -e
-          # Если в ~/kittygram есть .git, обновляем
-          if [ -d ~/kittygram/.git ]; then
-            echo "Обновляем существующий репозиторий"
-            cd ~/kittygram
-            git reset --hard
-            git pull origin main
-          else
-            echo "Клонируем репозиторий в первый раз"
-            git clone https://github.com/korney-gel/kittigram-final.git ~/kittygram
-            cd ~/kittygram
+           # Удаляем существующую папку, если она есть
+          if [ -d ~/kittygram ]; then
+            echo "Удаляем существующую папку"
+            rm -rf ~/kittygram
           fi
+            
+          echo "Клонируем репозиторий в первый раз"
+          git clone https://github.com/korney-gel/kittigram-final.git ~/kittygram
+          cd ~/kittygram  
           
           echo "Создаём (или обновляем) .env"
           cat << ENV_EOF > .env
