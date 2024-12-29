@@ -22,13 +22,12 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
 
-
   # Имя и описание контейнера с бэкендом:
   backend:
-    # Из какого Dockerfile собирать образ для этого контейнера:
+    # Указываем образ из Docker Hub:
+    image: korney1978/kittygram_backend:latest
     networks:
         - backend_network
-    build: ./backend/
     ports:
       - "8000:8000"
     env_file: .env
@@ -41,20 +40,22 @@ services:
 
   # Имя третьего контейнера. Это контейнер с фронтендом:
   frontend:
+    # Указываем образ из Docker Hub:
+    image: korney1978/kittygram_frontend:latest
     env_file: .env
     networks:
       - backend_network
-    build: ./frontend/
     ports:
       - "3000:80"  # 3000 - порт на локальной машине, 8000 - порт в контейнере
     volumes:
       - static:/app/build/static
 
-# Прокси-сервер:
+  # Прокси-сервер:
   gateway:
+    # Указываем образ из Docker Hub:
+    image: korney1978/kittygram_gateway:latest
     networks:
         - backend_network
-    build: ./nginx/
     volumes:
       - static:/var/html/static
       - media:/var/html/media
@@ -63,5 +64,7 @@ services:
     depends_on:
       - backend
       - frontend
+
+# Сеть для взаимодействия контейнеров:
 networks:
   backend_network:
