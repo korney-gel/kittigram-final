@@ -21,7 +21,8 @@ services:
     # Какой volume подключить для этого контейнера:
     volumes:
       - pg_data:/var/lib/postgresql/data
-
+#    ports:
+#      - "5432:5432"
 
   # Имя и описание контейнера с бэкендом:
   backend:
