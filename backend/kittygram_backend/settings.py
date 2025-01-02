@@ -9,7 +9,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-STATIC_ROOT = "/app/collected_static"
+# STATIC_ROOT = "/app/collected_static"
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -97,10 +97,10 @@ USE_TZ = True
 
 
 STATIC_URL = '/static/'
-STATIC_ROOT = '/var/html/static/'#os.path.join(BASE_DIR, 'collected_static')
+STATIC_ROOT = '/var/html/static/' #os.path.join(BASE_DIR, 'collected_static')
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/var/html/media/'#os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = '/app/media/' #os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
