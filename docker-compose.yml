@@ -37,7 +37,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - static:/var/html/static/
+      - static:/app/static/
       - media:/app/media/
 
   # Имя третьего контейнера. Это контейнер с фронтендом:
@@ -57,8 +57,8 @@ services:
         - backend_network
     build: ./nginx/
     volumes:
-      - static:/var/html/static
-      - media:/app/media
+      - static:/app/static/
+      - media:/app/media/
     ports:
       - "80:80"
     depends_on:
