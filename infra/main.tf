@@ -65,4 +65,9 @@ resource "yandex_compute_instance" "vm" {
   }
 }
 
+variable "ssh_public_key" {
+  description = "Public SSH key for VM access"
+  type        = string
+}
+
 
