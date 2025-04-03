@@ -41,11 +41,7 @@ resource "yandex_vpc_subnet" "kittygram-subnet" {
   v4_cidr_blocks = ["10.2.0.0/16"]         # Диапазон IP-адресов в нотации CIDR (65536 адресов)
 }
 
-# Создание ВМ
-data "yandex_compute_image" "Ubuntu" {
-  family    = "ubuntu-20-04-lts"
-  folder_id = "standard-images"
-}
+
 
 resource "yandex_compute_instance" "vm" {
   name = "kittygram-terraform-vm" # Имя ВМ
@@ -57,7 +53,7 @@ resource "yandex_compute_instance" "vm" {
 
  boot_disk {
     initialize_params {
-      image_id = data.yandex_compute_image.ubuntu.id
+      image_id = "f2e3s8u6ecl26615m3pv"
     }
   }
 
