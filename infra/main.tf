@@ -51,10 +51,10 @@ resource "yandex_compute_instance" "vm" {
   }
 
   boot_disk {
-    initialize_params {
-      image_id = "fd87va5cc00gaq2f5qfb" # Ubuntu 20.04 LTS
-    }
+  initialize_params {
+    image_family = "ubuntu-2404-lts"
   }
+}
 
   network_interface {
     subnet_id = yandex_vpc_subnet.kittygram-subnet.id
