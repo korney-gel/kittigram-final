@@ -23,7 +23,7 @@ provider "yandex" {
   zone = "ru-central1-a"
   cloud_id = "b1gjhns5mdgfvvsk8qud"
   folder_id = "b1glgve5lotc5cunfnm5"
-  service_account_key_file = "./infra/key.json"
+  service_account_key_file = "key.json"
 }
 
 # Создаём виртуальную сеть - изолированный сетевой домен для наших ресурсов
