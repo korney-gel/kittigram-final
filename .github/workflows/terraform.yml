@@ -29,7 +29,7 @@ jobs:
 
       - name: Write service account key to file
         run: |
-          printf '%s' "${{ secrets.YC_SERVICE_ACCOUNT_KEY }}" > ./infra/key.json
+          echo "${{ secrets.YC_SERVICE_ACCOUNT_KEY_BASE64 }}" | base64 -d > ./infra/key.json
 
 
       - name: Terraform Init
