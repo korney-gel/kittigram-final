@@ -42,6 +42,11 @@ resource "yandex_vpc_subnet" "kittygram-subnet" {
 }
 
 # Создание ВМ
+data "yandex_compute_image" "ubuntu" {
+  family    = "ubuntu-2004-lts"
+  folder_id = "standard-images"
+}
+
 resource "yandex_compute_instance" "vm" {
   name = "kittygram-terraform-vm" # Имя ВМ
 
@@ -50,12 +55,12 @@ resource "yandex_compute_instance" "vm" {
     memory = 2
   }
 
-  boot_disk {
-  initialize_params {
-    image_family    = "ubuntu-2004-lts"
-    image_folder_id = "standard-images"
+ boot_disk {
+    initialize_params {
+      image_id = data.yandex_compute_image.ubuntu.id
+    }
   }
-}
+
 
   network_interface {
     subnet_id = yandex_vpc_subnet.kittygram-subnet.id
