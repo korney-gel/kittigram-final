@@ -77,6 +77,7 @@ resource "yandex_compute_instance" "vm" {
   boot_disk {
     initialize_params {
       image_id = data.yandex_compute_image.ubuntu.id
+      size     = 30  # размер диска в ГБ
     }
   }
   network_interface {
