@@ -52,7 +52,8 @@ resource "yandex_compute_instance" "vm" {
 
   boot_disk {
   initialize_params {
-    image_family = "ubuntu-2404-lts"
+    image_family    = "ubuntu-2004-lts"
+    image_folder_id = "standard-images"
   }
 }
 
