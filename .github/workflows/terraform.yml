@@ -27,6 +27,10 @@ jobs:
         with:
           terraform_version: 1.6.6
 
+      - name: Write service account key to file
+        run: echo '${{ secrets.YC_SERVICE_ACCOUNT_KEY }}' > ./infra/key.json
+
+
       - name: Terraform Init
         working-directory: ./infra
         run: terraform init
