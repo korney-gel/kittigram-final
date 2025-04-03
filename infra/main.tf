@@ -42,8 +42,8 @@ resource "yandex_vpc_subnet" "kittygram-subnet" {
 }
 
 # Создание ВМ
-data "yandex_compute_image" "ubuntu" {
-  family    = "ubuntu-2004-lts"
+data "yandex_compute_image" "Ubuntu" {
+  family    = "ubuntu-20-04-lts"
   folder_id = "standard-images"
 }
 
