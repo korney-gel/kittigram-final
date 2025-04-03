@@ -76,7 +76,7 @@ resource "yandex_compute_instance" "vm" {
   }
   boot_disk {
     initialize_params {
-      image_id = data.yandex_compute_image.Ubuntu.id
+      image_id = data.yandex_compute_image.ubuntu.id
     }
   }
   network_interface {
