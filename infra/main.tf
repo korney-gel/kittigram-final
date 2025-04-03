@@ -71,4 +71,10 @@ variable "ssh_public_key" {
   type        = string
 }
 
+variable "yc_service_account_key" {
+  description = "Service account key for Yandex Cloud (JSON content)"
+  type        = string
+  sensitive   = true
+}
+
 
