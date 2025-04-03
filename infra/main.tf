@@ -62,10 +62,11 @@ resource "yandex_vpc_security_group" "kittygram-sg" {
   }
 }
 
-data "yandex_compute_image" "Ubuntu" {
-  family    = "Ubuntu-20-04-lts"
+data "yandex_compute_image" "ubuntu" {
+  family    = "ubuntu-2004-lts"
   folder_id = "standard-images"
 }
+
 
 resource "yandex_compute_instance" "vm" {
   name = "kittygram-terraform-vm"
@@ -84,7 +85,7 @@ resource "yandex_compute_instance" "vm" {
     security_group_ids = [yandex_vpc_security_group.kittygram-sg.id]
   }
   metadata = {
-    ssh-keys = "Ubuntu:${var.ssh_public_key}"
+    ssh-keys = "ubuntu:${var.ssh_public_key}"
   }
 }
 
